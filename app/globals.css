@@ -1,0 +1,169 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Paradigm-inspired Desaturated Palette (from Treemap) */
+    --category-politics: #E5EAF2;
+    --category-sports: #E2F1E3;
+    --category-crypto: #EDEBF4;
+    --category-culture: #F2F4E9;
+    --category-economics: #F9ECE1;
+    --category-financials: #F5E8ED;
+    --category-international: #F0F0F0;
+    --category-stem: #E8F1F2;
+
+    /* Semantic Market Colors */
+    --market-blue: var(--category-politics);
+    --market-green: var(--category-sports);
+    --market-orange: var(--category-economics);
+    --market-purple: var(--category-crypto);
+
+    /* Vibrant Market Colors (for lines/charts) */
+    --market-blue-vibrant: #4A90E2;
+    /* Refined Polymarket Blue */
+    --market-green-vibrant: #27AE60;
+    /* Refined Kalshi Green */
+    --market-orange-vibrant: #E67E22;
+    /* Refined Orange */
+    --market-purple-vibrant: #9B59B6;
+
+    /* Darker variations for patterns/borders */
+    --market-blue-dark: #D1D9E6;
+    --market-green-dark: #D1E6D3;
+    --market-orange-dark: #F2D8C5;
+    --market-purple-dark: #DED9E6;
+
+    --terminal-border: #000000;
+    --terminal-header-text: #000000;
+    --terminal-dim-text: #666666;
+    --terminal-accent: #00FF00;
+    /* Neon Green from Treemap Hover */
+    --terminal-green: var(--market-green-vibrant);
+    --terminal-red: #E74C3C;
+  }
+}
+
+body {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  color: #000;
+}
+
+.font-serif {
+  font-family: var(--font-serif), serif;
+}
+
+.font-mono {
+  font-family: var(--font-mono), monospace;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 98%;
+    --foreground: 0 0% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+    --primary: 0 0% 5%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 93%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 0 0% 93%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 0 0% 93%;
+    --accent-foreground: 0 0% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+    --ring: 0 0% 10%;
+    --chart-1: 220 60% 55%;
+    --chart-2: 160 50% 45%;
+    --chart-3: 200 60% 40%;
+    --chart-4: 280 50% 60%;
+    --chart-5: 30 70% 60%;
+    --radius: 0.25rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
