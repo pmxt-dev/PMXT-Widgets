@@ -66,7 +66,7 @@ export default function LandingPage() {
         {/* Widgets Grid */}
         <section id="widgets" className="py-24 px-6 max-w-7xl mx-auto border-t border-x border-black/5 bg-white">
           <div className="mb-24 px-4">
-            <h2 className="text-5xl font-normal tracking-tight mb-4 text-center">The Widget Library</h2>
+            <h2 className="text-5xl font-normal tracking-tight mb-4 text-center">The Widgets</h2>
             <p className="text-xl text-black/50 text-center font-serif max-w-2xl mx-auto">
               Modular components designed for high-performance prediction market applications.
             </p>
