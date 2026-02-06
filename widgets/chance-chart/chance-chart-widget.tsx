@@ -1,28 +1,32 @@
 'use client'
 
-import React, { useMemo, useState, useRef } from 'react'
+import React, { useEffect, useRef, useMemo, useState } from 'react'
+import { createChart, ColorType, IChartApi, LineSeries, AreaSeries, ISeriesApi } from 'lightweight-charts'
 
-interface MarketData {
-    url: string
-    data: number[]
-    color: string
+interface SeriesData {
     name: string
+    color: string
+    data: { time: number; value: number }[]
+    axis?: 'left' | 'right'
 }
 
 interface ChanceChartProps {
-    width: number
-    height: number
+    width?: number | string
+    height?: number
+    series?: SeriesData[]
+    // Compatibility with existing demo
     urls?: string[]
 }
 
 const MONO_FONT = "var(--font-mono), monospace"
 const SERIF_FONT = "var(--font-serif), serif"
 
-// Use the same color palette as the volume timeline
 const MARKET_COLORS = [
-    { color: 'var(--market-green-vibrant)', name: 'Kalshi' },
-    { color: 'var(--market-blue-vibrant)', name: 'Polymarket' },
-    { color: 'var(--market-orange-vibrant)', name: 'Limitless' },
+    '#27AE60', // Green
+    '#4A90E2', // Blue
+    '#E67E22', // Orange
+    '#9B59B6', // Purple
+    '#E74C3C', // Red
 ]
 
 const extractMarketName = (url: string): string => {
@@ -41,215 +45,206 @@ const extractMarketName = (url: string): string => {
 }
 
 export function ChanceChart({
-    width,
-    height,
+    width = '100%',
+    height = 300,
+    series: providedSeries,
     urls = []
 }: ChanceChartProps) {
-    const svgRef = useRef<SVGSVGElement>(null)
-    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+    const chartContainerRef = useRef<HTMLDivElement>(null)
+    const chartRef = useRef<IChartApi | null>(null)
+    const [hoverData, setHoverData] = useState<{ [key: string]: number }>({})
+    const [hoverDate, setHoverDate] = useState<string | null>(null)
 
-    // Add padding for Y-axis labels
-    const paddingLeft = 35
-    const chartWidth = width - paddingLeft
+    // Generate mock data if none provided (for demo purposes)
+    const chartSeries = useMemo((): SeriesData[] => {
+        if (providedSeries && providedSeries.length > 0) return providedSeries
 
-    // Generate mock data for each market URL
-    const markets = useMemo((): MarketData[] => {
-        const numPoints = 50
         const marketUrls = urls.length > 0 ? urls : [
             'https://polymarket.com/event/example-1',
             'https://kalshi.com/markets/example-2'
         ]
 
+        const now = Math.floor(Date.now() / 1000)
+        const daySeconds = 86400
+        const numPoints = 60
+
         return marketUrls.map((url, idx) => {
-            const colorConfig = MARKET_COLORS[idx % MARKET_COLORS.length]
-            const data: number[] = []
-            let val = 30 + Math.random() * 40 // Start between 30-70%
+            const data: { time: number; value: number }[] = []
+            let val = 30 + Math.random() * 40
 
             for (let i = 0; i < numPoints; i++) {
-                val += (Math.random() - 0.5) * 8
+                const time = now - (numPoints - 1 - i) * daySeconds
+                val += (Math.random() - 0.5) * 6
                 val = Math.max(5, Math.min(95, val))
-                data.push(val)
+                data.push({ time, value: val })
             }
 
             return {
-                url,
+                name: extractMarketName(url),
+                color: MARKET_COLORS[idx % MARKET_COLORS.length],
                 data,
-                color: colorConfig.color,
-                name: extractMarketName(url)
+                axis: idx % 2 === 0 ? 'left' : 'right' // demonstrating multiple axes
             }
         })
-    }, [urls])
+    }, [providedSeries, urls])
 
-    // Calculate Y-axis range (0-100% for probability)
-    const minY = 0
-    const maxY = 100
-    const range = maxY - minY
+    useEffect(() => {
+        if (!chartContainerRef.current) return
 
-    const pointWidth = chartWidth / 50
-
-    const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
-        if (!svgRef.current) return
-        const rect = svgRef.current.getBoundingClientRect()
-        const x = e.clientX - rect.left - paddingLeft
-        const index = Math.floor(x / pointWidth)
-        if (index >= 0 && index < 50) {
-            setHoveredIndex(index)
-        } else {
-            setHoveredIndex(null)
+        const handleResize = () => {
+            if (chartRef.current && chartContainerRef.current) {
+                chartRef.current.applyOptions({ width: chartContainerRef.current.clientWidth })
+            }
         }
-    }
+
+        const chart = createChart(chartContainerRef.current, {
+            layout: {
+                background: { type: ColorType.Solid, color: '#ffffff' },
+                textColor: '#999',
+                fontSize: 10,
+                fontFamily: MONO_FONT,
+            },
+            grid: {
+                vertLines: { visible: false },
+                horzLines: { color: '#f0f0f0' },
+            },
+            leftPriceScale: {
+                visible: true,
+                borderVisible: false,
+                scaleMargins: { top: 0.1, bottom: 0.1 },
+            },
+            rightPriceScale: {
+                visible: false,
+            },
+            timeScale: {
+                visible: true,
+                borderVisible: false,
+                timeVisible: true,
+                secondsVisible: false,
+            },
+            handleScroll: true,
+            handleScale: true,
+            width: chartContainerRef.current.clientWidth,
+            height: height,
+            crosshair: {
+                vertLine: {
+                    color: '#e0e0e0',
+                    width: 1,
+                    style: 2,
+                    labelVisible: true,
+                },
+                horzLine: {
+                    color: '#e0e0e0',
+                    width: 1,
+                    style: 2,
+                    labelVisible: true,
+                },
+            },
+        })
+
+        const seriesApis: { api: ISeriesApi<"Area">, name: string }[] = []
+
+        chartSeries.forEach((s) => {
+            const series = chart.addSeries(AreaSeries, {
+                lineColor: s.color,
+                topColor: s.color + '33', // 20% opacity hex
+                bottomColor: 'rgba(255, 255, 255, 0)',
+                lineWidth: 2,
+                priceScaleId: 'left',
+                priceLineVisible: false,
+                lastValueVisible: false,
+                crosshairMarkerVisible: true,
+            })
+            series.setData(s.data as any)
+            seriesApis.push({ api: series, name: s.name })
+        })
+
+        chart.timeScale().fitContent()
+        chartRef.current = chart
+
+        chart.subscribeCrosshairMove((param) => {
+            if (
+                param.point === undefined ||
+                !param.time ||
+                param.point.x < 0 ||
+                param.point.x > (chartContainerRef.current?.clientWidth || 0) ||
+                param.point.y < 0 ||
+                param.point.y > height
+            ) {
+                setHoverData({})
+                setHoverDate(null)
+            } else {
+                const newHoverData: { [key: string]: number } = {}
+                seriesApis.forEach(({ api, name }) => {
+                    const data = param.seriesData.get(api) as { value: number } | undefined
+                    if (data) {
+                        newHoverData[name] = data.value
+                    }
+                })
+                setHoverData(newHoverData)
+                const date = new Date((param.time as number) * 1000)
+                setHoverDate(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }))
+            }
+        })
+
+        window.addEventListener('resize', handleResize)
+
+        return () => {
+            window.removeEventListener('resize', handleResize)
+            chart.remove()
+        }
+    }, [chartSeries, height])
 
     return (
-        <svg
-            ref={svgRef}
-            width={width}
-            height={height}
-            className="overflow-visible"
-            onMouseMove={handleMouseMove}
-            onMouseLeave={() => setHoveredIndex(null)}
-            style={{ cursor: 'crosshair' }}
-        >
-            {/* Grid Lines */}
-            {[0, 0.25, 0.5, 0.75, 1].map((p) => (
-                <line
-                    key={p}
-                    x1={paddingLeft}
-                    y1={height * p}
-                    x2={width}
-                    y2={height * p}
-                    stroke="#eee"
-                    strokeWidth={1}
-                />
-            ))}
+        <div style={{
+            width: '100%',
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+            background: '#fff',
+            border: '1px solid #000',
+            padding: '24px',
+            boxSizing: 'border-box'
+        }}>
+            {/* Header info like Mini Chart */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '32px' }}>
+                    {chartSeries.map((s) => (
+                        <div key={s.name} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: s.color }} />
+                                <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#666', fontFamily: MONO_FONT, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                    {s.name}
+                                </span>
+                            </div>
+                            <span style={{ fontSize: '28px', fontWeight: '700', color: '#000', fontFamily: MONO_FONT, letterSpacing: '-0.02em' }}>
+                                {hoverData[s.name] !== undefined ? `${hoverData[s.name].toFixed(1)}%` : `${s.data[s.data.length - 1].value.toFixed(1)}%`}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+                {hoverDate && (
+                    <div style={{ fontSize: '10px', color: '#999', fontWeight: 'bold', fontFamily: MONO_FONT, background: '#f5f5f5', padding: '4px 8px' }}>
+                        {hoverDate}
+                    </div>
+                )}
+            </div>
 
-            {/* Y-axis labels */}
-            {[0, 25, 50, 75, 100].map((val) => (
-                <text
-                    key={val}
-                    x={paddingLeft - 8}
-                    y={height - (val / 100) * height + 4}
-                    fontSize={9}
-                    fontFamily={MONO_FONT}
-                    fill="#999"
-                    textAnchor="end"
-                >
-                    {val}%
-                </text>
-            ))}
+            {/* Chart Container */}
+            <div ref={chartContainerRef} style={{ width: '100%', height: `${height}px` }} />
 
-            {/* Draw lines for each market */}
-            {markets.map((market, marketIdx) => {
-                const linePath = market.data.map((val, i) => {
-                    const x = paddingLeft + i * pointWidth + pointWidth / 2
-                    const y = height - ((val - minY) / range) * height
-                    return `${i === 0 ? 'M' : 'L'} ${x},${y}`
-                }).join(' ')
-
-                return (
-                    <g key={marketIdx}>
-                        {/* Main line */}
-                        <path
-                            d={linePath}
-                            fill="none"
-                            stroke={market.color}
-                            strokeWidth={3}
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-
-                        {/* Data points */}
-                        {market.data.map((val, i) => {
-                            const x = paddingLeft + i * pointWidth + pointWidth / 2
-                            const y = height - ((val - minY) / range) * height
-                            const isLast = i === market.data.length - 1
-
-                            return (
-                                <circle
-                                    key={i}
-                                    cx={x}
-                                    cy={y}
-                                    r={isLast ? 5 : 2}
-                                    fill={market.color}
-                                    opacity={isLast ? 1 : 0.4}
-                                    stroke={isLast ? "#fff" : "none"}
-                                    strokeWidth={isLast ? 2 : 0}
-                                />
-                            )
-                        })}
-                    </g>
-                )
-            })}
-
-            {/* Hover Tooltip */}
-            {hoveredIndex !== null && (
-                <g style={{ pointerEvents: 'none' }}>
-                    <rect
-                        x={paddingLeft + hoveredIndex * pointWidth}
-                        y={0}
-                        width={pointWidth}
-                        height={height}
-                        fill="rgba(0,0,0,0.05)"
-                    />
-                    <line
-                        x1={paddingLeft + hoveredIndex * pointWidth + pointWidth / 2}
-                        y1={0}
-                        x2={paddingLeft + hoveredIndex * pointWidth + pointWidth / 2}
-                        y2={height}
-                        stroke="#000"
-                        strokeDasharray="2,2"
-                    />
-
-                    {/* Highlighted points for all markets */}
-                    {markets.map((market, idx) => {
-                        const x = paddingLeft + hoveredIndex * pointWidth + pointWidth / 2
-                        const y = height - ((market.data[hoveredIndex] - minY) / range) * height
-                        return (
-                            <circle
-                                key={idx}
-                                cx={x}
-                                cy={y}
-                                r={6}
-                                fill={market.color}
-                                stroke="#fff"
-                                strokeWidth={2}
-                            />
-                        )
-                    })}
-
-                    <g transform={`translate(${hoveredIndex > 25 ? paddingLeft + hoveredIndex * pointWidth - 175 : paddingLeft + hoveredIndex * pointWidth + pointWidth + 10}, 10)`}>
-                        {/* Shadow */}
-                        <rect
-                            x={4}
-                            y={4}
-                            width={165}
-                            height={30 + markets.length * 20}
-                            fill="rgba(0,0,0,0.2)"
-                        />
-                        <rect
-                            width={165}
-                            height={30 + markets.length * 20}
-                            fill="#000"
-                            stroke="rgba(255,255,255,0.2)"
-                            strokeWidth={1}
-                        />
-                        <text x={12} y={20} fontSize={10} fontFamily={MONO_FONT} fontWeight="bold" fill="#fff" letterSpacing="0.05em">
-                            POINT {hoveredIndex + 1}
-                        </text>
-
-                        {markets.map((market, idx) => (
-                            <g key={idx} transform={`translate(12, ${38 + idx * 20})`}>
-                                <circle cx={3} cy={0} r={4} fill={market.color} />
-                                <text x={14} y={4} fontSize={9} fontFamily={MONO_FONT} fill="#aaa">
-                                    {market.name.toUpperCase().slice(0, 8)}
-                                    <tspan fill={market.color} fontWeight="bold" dx={4}>
-                                        {market.data[hoveredIndex].toFixed(1)}%
-                                    </tspan>
-                                </text>
-                            </g>
-                        ))}
-                    </g>
-                </g>
-            )}
-        </svg>
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                #tv-attr-logo, 
+                [class*="tv-lightweight-charts-logo"],
+                .tv-logo-container {
+                    display: none !important;
+                    visibility: hidden !important;
+                    opacity: 0 !important;
+                    pointer-events: none !important;
+                }
+            `}} />
+        </div>
     )
 }

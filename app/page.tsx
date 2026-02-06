@@ -124,10 +124,10 @@ export default function LandingPage() {
                   title="Full Chance Chart"
                   description="Real-time percentage chance tracking with historical price action."
                   render={(w) => (
-                    <div className="w-full h-full p-4">
+                    <div className="w-full h-full p-6">
                       <ChanceChart
-                        width={w - 64}
-                        height={300}
+                        width={w - 96}
+                        height={320}
                         urls={[
                           'https://polymarket.com/event/mamdani-opens-city-owned-grocery-store-by-june-30',
                           'https://kalshi.com/markets/kxmarriageswiftkelce/swift-kelce-married/kxmarriageswiftkelce-26'
