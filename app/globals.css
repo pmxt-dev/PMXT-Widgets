@@ -4,7 +4,7 @@
 
 @layer base {
   :root {
-    /* Paradigm-inspired Desaturated Palette (from Treemap) */
+    /* Paradigm-inspired Desaturated Palette (Light Mode) */
     --category-politics: #E5EAF2;
     --category-sports: #E2F1E3;
     --category-crypto: #EDEBF4;
@@ -14,7 +14,7 @@
     --category-international: #F0F0F0;
     --category-stem: #E8F1F2;
 
-    /* Semantic Market Colors */
+    /* Semantic Market Colors (Light Mode) */
     --market-blue: var(--category-politics);
     --market-green: var(--category-sports);
     --market-orange: var(--category-economics);
@@ -22,14 +22,11 @@
 
     /* Vibrant Market Colors (for lines/charts) */
     --market-blue-vibrant: #4A90E2;
-    /* Refined Polymarket Blue */
     --market-green-vibrant: #27AE60;
-    /* Refined Kalshi Green */
     --market-orange-vibrant: #E67E22;
-    /* Refined Orange */
     --market-purple-vibrant: #9B59B6;
 
-    /* Darker variations for patterns/borders */
+    /* Pattern/Accent Colors (Light Mode) */
     --market-blue-dark: #D1D9E6;
     --market-green-dark: #D1E6D3;
     --market-orange-dark: #F2D8C5;
@@ -39,9 +36,90 @@
     --terminal-header-text: #000000;
     --terminal-dim-text: #666666;
     --terminal-accent: #00FF00;
-    /* Neon Green from Treemap Hover */
     --terminal-green: var(--market-green-vibrant);
     --terminal-red: #E74C3C;
+
+    /* Shadcn/UI defaults */
+    --background: 0 0% 98%;
+    --foreground: 0 0% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+    --primary: 0 0% 5%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 93%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 0 0% 93%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 0 0% 93%;
+    --accent-foreground: 0 0% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+    --ring: 0 0% 10%;
+    --radius: 0.25rem;
+  }
+
+  .dark {
+    /* High-Vibrancy "Terminal Glow" Palette for Dark Mode */
+    --category-politics: #1e3a8a;
+    /* Deep Royal Blue */
+    --category-sports: #064e3b;
+    /* Deep Forest Green */
+    --category-crypto: #4c1d95;
+    /* Deep Rich Purple */
+    --category-culture: #3f6212;
+    /* Deep Olive/Lime */
+    --category-economics: #7c2d12;
+    /* Deep Blood Orange */
+    --category-financials: #701a75;
+    /* Deep Fuchsia */
+    --category-international: #27272a;
+    --category-stem: #155e75;
+    /* Deep Teal */
+
+    /* Semantic Market Colors (Dark Mode Base) */
+    --market-blue: var(--category-politics);
+    --market-green: var(--category-sports);
+    --market-orange: var(--category-economics);
+    --market-purple: var(--category-crypto);
+
+    /* "Neon Accent" Patterns for Dark Mode (The "Pop" Factor) */
+    --market-blue-dark: #3b82f6;
+    /* Electric Blue Lines */
+    --market-green-dark: #22c55e;
+    /* Terminal Green Lines */
+    --market-orange-dark: #f97316;
+    /* Bright Amber Lines */
+    --market-purple-dark: #a855f7;
+    /* High-Viz Purple Lines */
+
+    --terminal-border: #444444;
+    --terminal-header-text: #ffffff;
+    --terminal-dim-text: #999999;
+
+    /* Shadcn/UI dark defaults */
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
   }
 }
 
@@ -82,79 +160,6 @@ body {
 
   .backface-hidden {
     backface-visibility: hidden;
-  }
-}
-
-@layer base {
-  :root {
-    --background: 0 0% 98%;
-    --foreground: 0 0% 10%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
-    --primary: 0 0% 5%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 93%;
-    --secondary-foreground: 0 0% 10%;
-    --muted: 0 0% 93%;
-    --muted-foreground: 0 0% 40%;
-    --accent: 0 0% 93%;
-    --accent-foreground: 0 0% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 88%;
-    --input: 0 0% 88%;
-    --ring: 0 0% 10%;
-    --chart-1: 220 60% 55%;
-    --chart-2: 160 50% 45%;
-    --chart-3: 200 60% 40%;
-    --chart-4: 280 50% 60%;
-    --chart-5: 30 70% 60%;
-    --radius: 0.25rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
 

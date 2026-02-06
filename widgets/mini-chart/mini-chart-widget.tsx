@@ -3,6 +3,8 @@
 import React, { useEffect, useRef, useMemo } from 'react'
 import { createChart, ColorType, IChartApi, AreaSeries } from 'lightweight-charts'
 
+import { WidgetTheme } from '@/lib/widget-types'
+
 interface MiniChartProps {
     title: string
     chance: number
@@ -11,6 +13,8 @@ interface MiniChartProps {
     platform?: string
     width?: number
     logoUrl?: string
+    theme?: WidgetTheme
+    showShadow?: boolean
 }
 
 const MONO_FONT = "var(--font-mono), monospace"
@@ -27,6 +31,8 @@ export function MiniChart({
     platform = "PMXT",
     width = 340,
     logoUrl,
+    theme = 'light',
+    showShadow = false,
 }: MiniChartProps) {
     const chartContainerRef = useRef<HTMLDivElement>(null)
     const chartRef = useRef<IChartApi | null>(null)
@@ -48,6 +54,13 @@ export function MiniChart({
         }))
     }, [data])
 
+    const isDark = theme === 'dark'
+    const bgColor = isDark ? '#000000' : '#ffffff'
+    const textColor = isDark ? '#ffffff' : '#000000'
+    const borderColor = isDark ? '#333333' : '#000000'
+    const secondaryTextColor = isDark ? '#999' : '#666'
+    const shadow = showShadow ? (isDark ? '0 10px 30px rgba(0,0,0,0.5)' : '12px 12px 0px 0px rgba(0,0,0,1)') : 'none'
+
     useEffect(() => {
         if (!chartContainerRef.current) return
 
@@ -59,8 +72,8 @@ export function MiniChart({
 
         const chart = createChart(chartContainerRef.current, {
             layout: {
-                background: { type: ColorType.Solid, color: '#ffffff' },
-                textColor: '#000',
+                background: { type: ColorType.Solid, color: bgColor },
+                textColor: textColor,
             },
             grid: {
                 vertLines: { visible: false },
@@ -78,7 +91,7 @@ export function MiniChart({
             height: 80,
             crosshair: {
                 vertLine: {
-                    color: '#000',
+                    color: isDark ? '#ffffff' : '#000',
                     width: 1,
                     style: 2, // Dashed
                 },
@@ -133,14 +146,14 @@ export function MiniChart({
             window.removeEventListener('resize', handleResize)
             chart.remove()
         }
-    }, [formattedData, accentColor, lightAccentColor])
+    }, [formattedData, accentColor, lightAccentColor, bgColor, textColor, isDark])
 
     return (
         <div
             style={{
                 width: typeof width === 'number' ? `${width}px` : width,
-                background: '#fff',
-                border: '1px solid #000',
+                background: bgColor,
+                border: `1px solid ${borderColor}`,
                 padding: '16px',
                 boxSizing: 'border-box',
                 display: 'flex',
@@ -148,17 +161,19 @@ export function MiniChart({
                 fontFamily: MONO_FONT,
                 position: 'relative',
                 overflow: 'hidden',
-                userSelect: 'none'
+                userSelect: 'none',
+                color: textColor,
+                boxShadow: shadow,
             }}
         >
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 'bold', letterSpacing: '0.05em', color: '#666' }}>{platform.toUpperCase()}</span>
+                    <span style={{ fontSize: '11px', fontWeight: 'bold', letterSpacing: '0.05em', color: secondaryTextColor }}>{platform.toUpperCase()}</span>
                 </div>
                 <a
                     href="#"
-                    style={{ textDecoration: 'none', color: '#000', fontSize: '9px', fontWeight: 'bold', border: '1px solid #000', padding: '2px 6px' }}
+                    style={{ textDecoration: 'none', color: textColor, fontSize: '9px', fontWeight: 'bold', border: `1px solid ${textColor}`, padding: '2px 6px' }}
                     onClick={(e) => e.preventDefault()}
                 >
                     VIEW MARKET

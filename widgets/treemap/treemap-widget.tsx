@@ -1,6 +1,7 @@
 'use client'
 
 import { MarketItem } from '@/lib/market-data'
+import { WidgetTheme } from '@/lib/widget-types'
 import * as d3Hierarchy from 'd3-hierarchy'
 import React, { useState, useMemo } from 'react'
 
@@ -13,6 +14,8 @@ interface TreemapProps {
   rootValue?: number
   onItemClick?: (item: MarketItem, event: React.MouseEvent, path: MarketItem[]) => void
   onHeaderClick?: () => void
+  theme?: WidgetTheme
+  showShadow?: boolean
 }
 
 const formatValue = (value: number): string => {
@@ -48,6 +51,8 @@ function renderNode(
   setHoveredInfo: (info: HoveredItemInfo | null) => void,
   setMousePos: (pos: { x: number; y: number }) => void,
   onItemClick?: (item: MarketItem, event: React.MouseEvent, path: MarketItem[]) => void,
+  isDark?: boolean,
+  borderColor: string = "#000",
   currentPath: MarketItem[] = []
 ): React.ReactNode {
   const hasChildren = item.children && item.children.length > 0
@@ -56,7 +61,7 @@ function renderNode(
   const newPath = [...currentPath, item]
 
   // Highlight hovered leaf nodes with bright green
-  const color = isHovered ? 'var(--terminal-accent)' : (item.color || parentColor || '#e8e8e8')
+  const color = isHovered ? 'var(--terminal-accent)' : (item.color || parentColor || (isDark ? '#1a1a1a' : '#e8e8e8'))
 
   // Header height for nodes with children
   const headerHeight = hasChildren ? Math.min(22, Math.max(16, height * 0.1)) : 0
@@ -115,7 +120,7 @@ function renderNode(
           width={width}
           height={height}
           fill={color}
-          stroke="#000"
+          stroke={borderColor}
           strokeWidth={0.5}
           className="transition-colors duration-200"
         />
@@ -125,7 +130,7 @@ function renderNode(
             y={y + fontSize + 3}
             fontSize={fontSize}
             fontFamily={MONO_FONT}
-            fill="#000"
+            fill={isDark ? "#fff" : "#000"}
             style={{ pointerEvents: 'none' }}
           >
             {item.name.length > width / 6 ? item.name.slice(0, Math.floor(width / 6)) + '...' : item.name}
@@ -137,7 +142,7 @@ function renderNode(
             y={y + fontSize * 2 + 5}
             fontSize={fontSize - 1}
             fontFamily={MONO_FONT}
-            fill={isHovered ? "#000" : "#555"}
+            fill={isHovered ? (isDark ? "#fff" : "#000") : (isDark ? "#999" : "#555")}
             style={{ pointerEvents: 'none' }}
           >
             {formatValue(item.value)}
@@ -181,7 +186,7 @@ function renderNode(
         width={width}
         height={height}
         fill={color}
-        stroke="#000"
+        stroke={borderColor}
         strokeWidth={depth === 0 ? 1.5 : 1}
       />
 
@@ -190,7 +195,7 @@ function renderNode(
         <line
           x1={x} y1={y + headerHeight}
           x2={x + width} y2={y + headerHeight}
-          stroke="#000" strokeWidth={1}
+          stroke={borderColor} strokeWidth={1}
         />
       )}
 
@@ -202,11 +207,11 @@ function renderNode(
           fontSize={headerFontSize}
           fontWeight={depth === 0 ? '400' : '400'}
           fontFamily={SERIF_FONT}
-          fill="#000"
+          fill={isDark ? "#fff" : "#000"}
         >
           {item.name.length > width / (headerFontSize * 0.6) ? item.name.slice(0, Math.floor(width / (headerFontSize * 0.6))) + '..' : item.name}
           {width > 100 && (
-            <tspan fontSize={headerFontSize - 1} fontWeight="400" fill="#666"> {formatValue(item.value)}</tspan>
+            <tspan fontSize={headerFontSize - 1} fontWeight="400" fill={isDark ? "#999" : "#666"}> {formatValue(item.value)}</tspan>
           )}
         </text>
       )}
@@ -231,6 +236,8 @@ function renderNode(
           setHoveredInfo,
           setMousePos,
           onItemClick,
+          isDark,
+          borderColor,
           newPath
         )
       })}
@@ -238,9 +245,15 @@ function renderNode(
   )
 }
 
-export default function Treemap({ data, width, height, globalTotalValue, rootName, rootValue, onItemClick, onHeaderClick }: TreemapProps) {
+export default function Treemap({ data, width, height, globalTotalValue, rootName, rootValue, onItemClick, onHeaderClick, theme = 'light', showShadow = false }: TreemapProps) {
   const [hoveredInfo, setHoveredInfo] = useState<HoveredItemInfo | null>(null)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+
+  const isDark = theme === 'dark'
+  const bgColor = isDark ? '#000000' : '#ffffff'
+  const textColor = isDark ? '#ffffff' : '#000000'
+  const borderColor = isDark ? '#333333' : '#000000'
+  const shadow = showShadow ? (isDark ? '0 10px 30px rgba(0,0,0,0.5)' : '12px 12px 0px 0px rgba(0,0,0,1)') : 'none'
 
   const totalValue = useMemo(() => data.reduce((sum, item) => sum + item.value, 0), [data])
   const outerTitleHeight = 28
@@ -266,13 +279,13 @@ export default function Treemap({ data, width, height, globalTotalValue, rootNam
 
   return (
     <div
-      className="relative"
-      style={{ width, height }}
+      className={`relative ${isDark ? 'dark' : ''}`}
+      style={{ width, height, boxShadow: shadow }}
       onMouseLeave={() => setHoveredInfo(null)}
     >
-      <svg width={width} height={height} style={{ backgroundColor: '#fff', borderRadius: 0 }}>
+      <svg width={width} height={height} style={{ backgroundColor: bgColor, borderRadius: 0 }}>
         {/* Outer border - shifted by 1px to stay within bounds */}
-        <rect x={1} y={1} width={width - 2} height={height - 2} fill="none" stroke="#000" strokeWidth={2} />
+        <rect x={1} y={1} width={width - 2} height={height - 2} fill="none" stroke={borderColor} strokeWidth={2} />
 
         {/* Header Bar */}
         <g
@@ -293,7 +306,7 @@ export default function Treemap({ data, width, height, globalTotalValue, rootNam
         >
           <rect
             x={1} y={1} width={width - 2} height={outerTitleHeight}
-            fill="#fff" stroke="#000" strokeWidth={1}
+            fill={bgColor} stroke={borderColor} strokeWidth={1}
           />
           <text
             x={10}
@@ -301,7 +314,7 @@ export default function Treemap({ data, width, height, globalTotalValue, rootNam
             fontSize={width < 400 ? 12 : 14}
             fontFamily={SERIF_FONT}
             fontWeight="400"
-            fill="#000"
+            fill={textColor}
             style={{ pointerEvents: 'none' }}
           >
             {rootNameToUse} {formatValue(rootValueToUse)}
@@ -329,6 +342,8 @@ export default function Treemap({ data, width, height, globalTotalValue, rootNam
               setHoveredInfo,
               setMousePos,
               onItemClick,
+              isDark,
+              borderColor,
               []
             )
           })}
@@ -338,7 +353,7 @@ export default function Treemap({ data, width, height, globalTotalValue, rootNam
       {/* Terminal Hover Tooltip */}
       {hoveredInfo && (
         <div
-          className="fixed z-50 pointer-events-none flex flex-col bg-black text-white p-5 border border-white/20 shadow-2xl min-w-[240px]"
+          className={`fixed z-50 pointer-events-none flex flex-col ${isDark ? 'bg-zinc-900 border-zinc-700' : 'bg-black border-white/20'} text-white p-5 border shadow-2xl min-w-[240px]`}
           style={{
             left: mousePos.x + 15,
             top: mousePos.y + 15,

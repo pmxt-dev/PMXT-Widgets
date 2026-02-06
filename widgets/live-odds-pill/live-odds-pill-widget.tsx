@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { WidgetTheme } from '@/lib/widget-types'
 
 interface LiveOddsPillProps {
     label: string
@@ -8,6 +9,8 @@ interface LiveOddsPillProps {
     trend?: 'up' | 'down' | 'neutral'
     clickUrl?: string
     compact?: boolean
+    theme?: WidgetTheme
+    showShadow?: boolean
 }
 
 const MONO_FONT = "var(--font-mono), monospace"
@@ -18,8 +21,17 @@ export function LiveOddsPill({
     percentage,
     trend = 'neutral',
     clickUrl,
-    compact = false
+    compact = false,
+    theme = 'light',
+    showShadow = false
 }: LiveOddsPillProps) {
+    const isDark = theme === 'dark'
+    const bgColor = isDark ? '#000000' : '#ffffff'
+    const textColor = isDark ? '#ffffff' : '#000000'
+    const secondaryTextColor = isDark ? '#999' : '#374151'
+    const borderColor = isDark ? '#333333' : '#000000'
+    const shadow = showShadow ? (isDark ? '0 10px 30px rgba(0,0,0,0.5)' : '8px 8px 0px 0px rgba(0,0,0,1)') : 'none'
+
     // Determine color based on trend
     const getTrendColor = () => {
         switch (trend) {
@@ -28,7 +40,7 @@ export function LiveOddsPill({
             case 'down':
                 return 'var(--terminal-red)'
             default:
-                return 'var(--terminal-dim-text)'
+                return isDark ? '#666' : 'var(--terminal-dim-text)'
         }
     }
 
@@ -39,7 +51,7 @@ export function LiveOddsPill({
         alignItems: 'center',
         gap: compact ? '0.5rem' : '0.75rem',
         padding: compact ? '0.375rem 0.75rem' : '0.5rem 1rem',
-        background: 'white',
+        background: bgColor,
         border: `2px solid ${trendColor}`,
         borderRadius: '9999px',
         fontFamily: MONO_FONT,
@@ -48,21 +60,21 @@ export function LiveOddsPill({
         cursor: clickUrl ? 'pointer' : 'default',
         transition: 'all 0.2s ease',
         textDecoration: 'none',
-        color: '#000',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        color: textColor,
+        boxShadow: shadow,
         whiteSpace: 'nowrap'
     }
 
     const hoverStyle: React.CSSProperties = clickUrl ? {
         transform: 'translateY(-1px)',
-        boxShadow: '0 4px 8px rgba(0,0,0,0.15)'
+        boxShadow: showShadow ? (isDark ? '0 15px 40px rgba(0,0,0,0.6)' : '10px 10px 0px 0px rgba(0,0,0,1)') : (isDark ? '0 4px 12px rgba(255,255,255,0.1)' : '0 4px 8px rgba(0,0,0,0.15)')
     } : {}
 
     const [isHovered, setIsHovered] = React.useState(false)
 
     const content = (
         <>
-            <span style={{ color: '#374151', fontFamily: SERIF_FONT }}>{label}</span>
+            <span style={{ color: secondaryTextColor, fontFamily: SERIF_FONT }}>{label}</span>
             <span
                 style={{
                     color: trendColor,

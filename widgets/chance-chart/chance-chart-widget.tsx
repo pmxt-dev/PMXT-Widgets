@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useEffect, useRef, useMemo, useState } from 'react'
-import { createChart, ColorType, IChartApi, LineSeries, AreaSeries, ISeriesApi } from 'lightweight-charts'
+import { createChart, ColorType, IChartApi, AreaSeries, ISeriesApi } from 'lightweight-charts'
+import { WidgetTheme } from '@/lib/widget-types'
 
 interface SeriesData {
     name: string
@@ -16,6 +17,8 @@ interface ChanceChartProps {
     series?: SeriesData[]
     // Compatibility with existing demo
     urls?: string[]
+    theme?: WidgetTheme
+    showShadow?: boolean
 }
 
 const MONO_FONT = "var(--font-mono), monospace"
@@ -48,12 +51,22 @@ export function ChanceChart({
     width = '100%',
     height = 300,
     series: providedSeries,
-    urls = []
+    urls = [],
+    theme = 'light',
+    showShadow = false,
 }: ChanceChartProps) {
     const chartContainerRef = useRef<HTMLDivElement>(null)
     const chartRef = useRef<IChartApi | null>(null)
     const [hoverData, setHoverData] = useState<{ [key: string]: number }>({})
     const [hoverDate, setHoverDate] = useState<string | null>(null)
+
+    const isDark = theme === 'dark'
+    const bgColor = isDark ? '#000000' : '#ffffff'
+    const textColor = isDark ? '#ffffff' : '#000000'
+    const borderColor = isDark ? '#333333' : '#000000'
+    const gridColor = isDark ? '#1a1a1a' : '#f0f0f0'
+    const secondaryTextColor = isDark ? '#999' : '#666'
+    const shadow = showShadow ? (isDark ? '0 10px 30px rgba(0,0,0,0.5)' : '12px 12px 0px 0px rgba(0,0,0,1)') : 'none'
 
     // Generate mock data if none provided (for demo purposes)
     const chartSeries = useMemo((): SeriesData[] => {
@@ -99,14 +112,14 @@ export function ChanceChart({
 
         const chart = createChart(chartContainerRef.current, {
             layout: {
-                background: { type: ColorType.Solid, color: '#ffffff' },
-                textColor: '#999',
+                background: { type: ColorType.Solid, color: bgColor },
+                textColor: secondaryTextColor,
                 fontSize: 10,
                 fontFamily: MONO_FONT,
             },
             grid: {
                 vertLines: { visible: false },
-                horzLines: { color: '#f0f0f0' },
+                horzLines: { color: gridColor },
             },
             leftPriceScale: {
                 visible: true,
@@ -128,13 +141,13 @@ export function ChanceChart({
             height: height,
             crosshair: {
                 vertLine: {
-                    color: '#e0e0e0',
+                    color: isDark ? '#333' : '#e0e0e0',
                     width: 1,
                     style: 2,
                     labelVisible: true,
                 },
                 horzLine: {
-                    color: '#e0e0e0',
+                    color: isDark ? '#333' : '#e0e0e0',
                     width: 1,
                     style: 2,
                     labelVisible: true,
@@ -193,7 +206,7 @@ export function ChanceChart({
             window.removeEventListener('resize', handleResize)
             chart.remove()
         }
-    }, [chartSeries, height])
+    }, [chartSeries, height, bgColor, secondaryTextColor, gridColor, isDark])
 
     return (
         <div style={{
@@ -202,10 +215,12 @@ export function ChanceChart({
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
-            background: '#fff',
-            border: '1px solid #000',
+            background: bgColor,
+            border: `1px solid ${borderColor}`,
             padding: '24px',
-            boxSizing: 'border-box'
+            boxSizing: 'border-box',
+            boxShadow: shadow,
+            color: textColor
         }}>
             {/* Header info like Mini Chart */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -214,18 +229,18 @@ export function ChanceChart({
                         <div key={s.name} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                 <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: s.color }} />
-                                <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#666', fontFamily: MONO_FONT, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                <span style={{ fontSize: '10px', fontWeight: 'bold', color: secondaryTextColor, fontFamily: MONO_FONT, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                     {s.name}
                                 </span>
                             </div>
-                            <span style={{ fontSize: '28px', fontWeight: '700', color: '#000', fontFamily: MONO_FONT, letterSpacing: '-0.02em' }}>
+                            <span style={{ fontSize: '28px', fontWeight: '700', color: textColor, fontFamily: MONO_FONT, letterSpacing: '-0.02em' }}>
                                 {hoverData[s.name] !== undefined ? `${hoverData[s.name].toFixed(1)}%` : `${s.data[s.data.length - 1].value.toFixed(1)}%`}
                             </span>
                         </div>
                     ))}
                 </div>
                 {hoverDate && (
-                    <div style={{ fontSize: '10px', color: '#999', fontWeight: 'bold', fontFamily: MONO_FONT, background: '#f5f5f5', padding: '4px 8px' }}>
+                    <div style={{ fontSize: '10px', color: secondaryTextColor, fontWeight: 'bold', fontFamily: MONO_FONT, background: isDark ? '#111' : '#f5f5f5', padding: '4px 8px' }}>
                         {hoverDate}
                     </div>
                 )}

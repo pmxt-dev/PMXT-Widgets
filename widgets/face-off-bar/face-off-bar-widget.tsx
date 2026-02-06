@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { WidgetTheme } from '@/lib/widget-types'
 
 interface FaceOffBarProps {
     optionA: {
@@ -16,6 +17,8 @@ interface FaceOffBarProps {
     clickUrl?: string
     height?: number | string
     showPercentages?: boolean
+    theme?: WidgetTheme
+    showShadow?: boolean
 }
 
 const MONO_FONT = "var(--font-mono), monospace"
@@ -45,11 +48,19 @@ export function FaceOffBar({
     optionB,
     clickUrl,
     height = 48,
-    showPercentages = true
+    showPercentages = true,
+    theme = 'light',
+    showShadow = true
 }: FaceOffBarProps) {
     const [isHovered, setIsHovered] = React.useState(false)
-    const patternIdA = `pattern-${optionA.color || 'blue'}-a-${Math.random().toString(36).substr(2, 9)}`
-    const patternIdB = `pattern-${optionB.color || 'orange'}-b-${Math.random().toString(36).substr(2, 9)}`
+    const patternIdA = React.useId() + '-a'
+    const patternIdB = React.useId() + '-b'
+
+    const isDark = theme === 'dark'
+    const bgColor = isDark ? '#000000' : '#ffffff'
+    const textColor = isDark ? '#ffffff' : '#000000'
+    const borderColor = isDark ? '#333333' : '#000000'
+    const shadow = showShadow ? (isDark ? '0 10px 30px rgba(0,0,0,0.5)' : '12px 12px 0px 0px rgba(0,0,0,1)') : 'none'
 
     // Default colors if not provided
     const colorSchemeA = COLORS[optionA.color || 'blue']
@@ -69,10 +80,10 @@ export function FaceOffBar({
     }
 
     const wrapperStyle: React.CSSProperties = {
-        background: '#fff',
-        border: '1px solid #000',
+        background: bgColor,
+        border: `1px solid ${borderColor}`,
         padding: '16px',
-        boxShadow: isHovered && clickUrl ? '3px 3px 0px 0px rgba(0,0,0,1)' : '2px 2px 0px 0px rgba(0,0,0,1)',
+        boxShadow: shadow,
         transform: isHovered && clickUrl ? 'translate(-1px, -1px)' : 'none',
         transition: 'all 0.15s ease'
     }
@@ -95,7 +106,7 @@ export function FaceOffBar({
         height: typeof height === 'number' ? `${height}px` : height,
         display: 'flex',
         overflow: 'hidden',
-        border: '1px solid #000',
+        border: `1px solid ${borderColor}`,
         position: 'relative'
     }
 
@@ -125,10 +136,10 @@ export function FaceOffBar({
                         width: '8px',
                         height: '8px',
                         background: colorSchemeA.base,
-                        border: '1px solid #000',
+                        border: `1px solid ${borderColor}`,
                         flexShrink: 0
                     }} />
-                    <span style={{ color: '#000', fontFamily: SERIF_FONT, fontSize: '14px', textTransform: 'none', letterSpacing: 'normal' }}>{optionA.label}</span>
+                    <span style={{ color: textColor, fontFamily: SERIF_FONT, fontSize: '14px', textTransform: 'none', letterSpacing: 'normal' }}>{optionA.label}</span>
                 </div>
 
                 {showPercentages && (
@@ -137,7 +148,7 @@ export function FaceOffBar({
                         gap: '4px',
                         fontWeight: '700',
                         fontSize: '13px',
-                        color: '#000'
+                        color: textColor
                     }}>
                         <span>{optionA.percentage}%</span>
                         <span style={{ opacity: 0.3 }}>:</span>
@@ -151,12 +162,12 @@ export function FaceOffBar({
                     gap: '8px',
                     justifyContent: 'flex-end'
                 }}>
-                    <span style={{ color: '#000', fontFamily: SERIF_FONT, fontSize: '14px', textTransform: 'none', letterSpacing: 'normal' }}>{optionB.label}</span>
+                    <span style={{ color: textColor, fontFamily: SERIF_FONT, fontSize: '14px', textTransform: 'none', letterSpacing: 'normal' }}>{optionB.label}</span>
                     <div style={{
                         width: '8px',
                         height: '8px',
                         background: colorSchemeB.base,
-                        border: '1px solid #000',
+                        border: `1px solid ${borderColor}`,
                         flexShrink: 0
                     }} />
                 </div>
@@ -171,17 +182,19 @@ export function FaceOffBar({
                         width={`${normalizedA}%`}
                         height="100%"
                         fill={colorSchemeA.base}
-                        stroke="#000"
+                        stroke={borderColor}
                         strokeWidth="0.5"
                     />
-                    <rect
-                        x="0"
-                        y="0"
-                        width={`${normalizedA}%`}
-                        height="100%"
-                        fill={`url(#${patternIdA})`}
-                        style={{ pointerEvents: 'none' }}
-                    />
+                    {!isDark && (
+                        <rect
+                            x="0"
+                            y="0"
+                            width={`${normalizedA}%`}
+                            height="100%"
+                            fill={`url(#${patternIdA})`}
+                            style={{ pointerEvents: 'none' }}
+                        />
+                    )}
 
                     {/* Option B Bar */}
                     <rect
@@ -190,17 +203,19 @@ export function FaceOffBar({
                         width={`${normalizedB}%`}
                         height="100%"
                         fill={colorSchemeB.base}
-                        stroke="#000"
+                        stroke={borderColor}
                         strokeWidth="0.5"
                     />
-                    <rect
-                        x={`${normalizedA}%`}
-                        y="0"
-                        width={`${normalizedB}%`}
-                        height="100%"
-                        fill={`url(#${patternIdB})`}
-                        style={{ pointerEvents: 'none' }}
-                    />
+                    {!isDark && (
+                        <rect
+                            x={`${normalizedA}%`}
+                            y="0"
+                            width={`${normalizedB}%`}
+                            height="100%"
+                            fill={`url(#${patternIdB})`}
+                            style={{ pointerEvents: 'none' }}
+                        />
+                    )}
 
                     {/* Center divider line */}
                     <line
@@ -208,7 +223,7 @@ export function FaceOffBar({
                         y1="0"
                         x2={`${normalizedA}%`}
                         y2="100%"
-                        stroke="#000"
+                        stroke={borderColor}
                         strokeWidth="1"
                     />
                 </svg>
@@ -222,6 +237,7 @@ export function FaceOffBar({
                 href={clickUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                className={isDark ? 'dark' : ''}
                 style={containerStyle}
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
@@ -232,7 +248,7 @@ export function FaceOffBar({
     }
 
     return (
-        <div style={containerStyle}>
+        <div className={isDark ? 'dark' : ''} style={containerStyle}>
             {content}
         </div>
     )
